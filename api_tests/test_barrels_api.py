@@ -191,7 +191,7 @@ class TestBarrelApi:
                - Ensures the DELETE request fails as expected with a 400 status code.
 
            Args:
-               post_barrels_valid (dict): Dictionary returned by the `post_barrels_valid` fixture containing barrel details.
+               post_barrel_valid (dict): Dictionary returned by the `post_barrels_valid` fixture containing barrel details.
         """
 
         url = ApiUrls.get_barrel_by_id(post_barrel_valid["id"])
@@ -220,7 +220,7 @@ class TestBarrelApi:
               - Ensures that the duplicate barrel creation attempt results in a `409 Conflict` response.
 
           Args:
-              post_barrels_valid (dict): A dictionary containing the details of a previously created barrel.
+              post_barrel_valid (dict): A dictionary containing the details of a previously created barrel.
 
           Raises:
               AssertionError: If the API does not return a `409` status code when trying to create a duplicate barrel.
@@ -405,6 +405,13 @@ class TestBarrelApi:
                                                              request_json=Barrels.CREATE_Barrel_Invalid_Type,
                                                              expected_status_code=400)
         data = response.json()
+        expected_errors = Barrels.expected_errors_invalid
+        actual = data["errors"].get('rfid')
+        # also return nonsense instead of The barrel field is required, should be qr has invalid format
+        assert actual == expected_errors['rfid'], f"validation message was {actual} for rfid"
+
+
+
 
 
     @mark.barrels
@@ -635,8 +642,9 @@ class TestBarrelApi:
                                                              request_json=Barrels.CREATE_Measuremenent_Negative_double,
                                                              expected_status_code=400)
         data = response.json()
-        is_positive_weight = CommonUtility.is_double(data["weight"])
-        is_positive_dirtLevel = CommonUtility.is_double(data["dirtLevel"])
+        print(data)
+        is_positive_weight = CommonUtility.is_double(data.get("weight"))
+        is_positive_dirtLevel = CommonUtility.is_double(data.get("dirtLevel"))
         assert is_positive_weight is False
         assert is_positive_dirtLevel is False
 
