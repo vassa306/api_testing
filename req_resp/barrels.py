@@ -131,7 +131,11 @@ class Barrels:
         "weight": ["The weight field is required."],
         "$.barrelId":["invalid uuid value"],
         "$.id":["invalid uuid value"]
+    }
 
+    expected_errors_invalid ={
+        "qr": ["qr must be string"],
+        "rfid": ['rfid must be string']
     }
 
 
