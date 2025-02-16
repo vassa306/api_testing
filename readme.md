@@ -17,8 +17,8 @@ parameter.
         pytest -s -v --host=prod --alluredir="./allure_dir" 
         allure serve ./allure_dir 
     
-    3. generate test documentation for api test with 
-    ./generate_doc.bat
+    3. Use ./generate_doc.bat to generate test documentation for API tests."
+ 
 
 
 

@@ -52,33 +52,34 @@ class TestBarrelApi:
 
     @pytest.fixture(scope="session")
     @mark.barrels
-    def post_barrels_valid(self):
+    def post_barrel_valid(self):
         """
-            Pytest fixture to create a new barrel via a POST request, validate its creation,
-            and ensure the data remains consistent in subsequent GET requests.
+            Test case to create a new barrel via API and validate its creation.
 
-            This fixture performs the following steps:
-            1. Sends a `POST` request to create a new barrel using predefined request data.
-            2. Extracts and stores key identifiers (`id`, `qr`, `rfid`, `nfc`) from the response.
-            3. Yields the created barrel's `id` for test usage.
-            4. Asserts that the generated `id` matches the expected UUID.
-            5. Sends a `GET` request to validate that the newly created barrel exists in the database.
+            This test performs the following steps:
 
-            Scope:
-                session - The fixture runs once per test session.
+            1. **Create a barrel**:
+               - Sends a `POST` request to the `GET_BARRELS` API endpoint with the necessary payload.
+               - Verifies that the response status code is `201 Created`.
+               - Extracts the `id`, `qr`, `rfid`, and `nfc` from the response.
+
+            2. **Validate the response**:
+               - Ensures the response conforms to the expected `JSON` schema.
+               - Confirms that the `Content-Type` of the response is `application/json; charset=utf-8`.
+
+            3. **Validate barrel existence**:
+               - Retrieves the list of barrels with a `GET` request.
+               - Asserts that the newly created barrel exists in the response data.
+
+            Assertions:
+            - The response structure must match the defined `Barrels_Schema`.
+            - The `Content-Type` should be `application/json; charset=utf-8`.
+            - The newly created barrel should be found in the subsequent `GET` request response.
 
             Yields:
-                Contains the dictionary of created object.
+            - The response data from the `POST` request to facilitate further validation.
 
-            Raises:
-                AssertionError: If the generated `id` does not match the expected UUID.
-                AssertionError: If the created barrel is not found in the GET response.
-
-            Logs:
-                - Prints the response data from the `POST` request.
-                - Prints the created barrel's details.
-                - Prints a boolean indicating whether the barrel exists in the system.
-        """
+            """
 
         url = ApiUrls.GET_BARRELS
         exp_uuid = Barrels.random_uuid
@@ -115,7 +116,7 @@ class TestBarrelApi:
         assert exists is True
 
     @mark.barrels
-    def test_post_barrels_invalid_headers(self):
+    def test_post_barrel_invalid_headers(self):
         """
            Tests the API's response when attempting to create a barrel with invalid headers.
 
@@ -142,7 +143,7 @@ class TestBarrelApi:
                                                              expected_status_code=400)
 
     @mark.barrels
-    def test_delete_barrels(self, post_barrels_valid):
+    def test_delete_barrel(self, post_barrel_valid):
         """
             Test deleting a barrel and verifying that it has been successfully removed.
 
@@ -160,19 +161,19 @@ class TestBarrelApi:
             arg: post_barrels_valid dict returned by post_barrels_valid fixture.
         """
 
-        url = ApiUrls.get_barrel_by_id(post_barrels_valid["id"])
+        url = ApiUrls.get_barrel_by_id(post_barrel_valid["id"])
         print(url)
         headers = CommonUtility.get_custom_header()
         response = FrameworkUtils.fire_api_with_cust_headers("DELETE", request_url=url, headers=headers,
                                                              expected_status_code=200)
 
         # call again get with the same value. should return 404 because barrel was deleted.
-        url = ApiUrls.get_barrel_by_id(post_barrels_valid)
+        url = ApiUrls.get_barrel_by_id(post_barrel_valid["id"])
         response = FrameworkUtils.fire_api_with_cust_headers("GET", request_url=url, headers=headers,
                                                              expected_status_code=404)
 
     @mark.barrels
-    def test_delete_barrels_inv_header(self, post_barrels_valid):
+    def test_delete_barrel_inv_header(self, post_barrel_valid):
         """
            Tests the API's behavior when attempting to delete a barrel with an invalid header.
 
@@ -193,14 +194,14 @@ class TestBarrelApi:
                post_barrels_valid (dict): Dictionary returned by the `post_barrels_valid` fixture containing barrel details.
         """
 
-        url = ApiUrls.get_barrel_by_id(post_barrels_valid["id"])
+        url = ApiUrls.get_barrel_by_id(post_barrel_valid["id"])
         print(url)
         headers = CommonUtility.get_custom_inv_header()
         response = FrameworkUtils.fire_api_with_cust_headers("DELETE", request_url=url, headers=headers,
                                                              expected_status_code=400)
 
     @mark.barrels
-    def test_create_twice_the_same_barrel(self, post_barrels_valid):
+    def test_create_twice_the_same_barrel(self, post_barrel_valid):
         """
           Test creating the same barrel twice to ensure the API prevents duplicate entries.
 
@@ -226,7 +227,7 @@ class TestBarrelApi:
 
         """
         url = ApiUrls.GET_BARRELS
-        data = post_barrels_valid
+        data = post_barrel_valid
         print(data)
         headers = CommonUtility.get_custom_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
@@ -235,7 +236,7 @@ class TestBarrelApi:
         print(response)
 
     @mark.barrels
-    def test_delete_barrels_invalid_id(self):
+    def test_delete_barrel_invalid_id(self):
         """
             Test deleting a non-existing barrel.
 
@@ -255,7 +256,7 @@ class TestBarrelApi:
                                                              expected_status_code=400)
 
     @mark.barrels
-    def test_post_barrels_missing_req_value(self):
+    def test_post_barrel_missing_req_value(self):
         """
           Tests the API endpoint for posting a barrel with missing required attributes.
 
@@ -281,21 +282,23 @@ class TestBarrelApi:
         print(response)
 
     @mark.barrels
-    def test_post_barrels_invalid_uuid(self):
+    def test_post_barrel_invalid_uuid(self):
         """
             Test case for attempting to create a barrel with an invalid UUID.
 
-            This test sends a POST request to the `GET_BARRELS` API endpoint with an incorrect UUID format
-            and verifies that the server returns a 400 Bad Request response.
+            This test verifies that the API correctly rejects a POST request containing an invalid UUID
+            and returns a 400 Bad Request response.
 
-            Steps:
+            **Test Steps:**
             1. Retrieve the API URL from `ApiUrls.GET_BARRELS`.
             2. Obtain custom headers using `CommonUtility.get_custom_header()`.
-            3. Send a POST request with an invalid UUID payload (`Barrels.CREATE_Barrel_Wrong_UUID`).
+            3. Send a POST request to the API with an invalid UUID payload (`Barrels.CREATE_Barrel_Wrong_UUID`).
             4. Validate that the response status code is 400.
+            5. Verify that the error message in the response matches the expected validation message.
 
-            Assertions:
-            - The response should return a 400 status code, indicating a client error.
+            **Assertions:**
+            - The response should have a status code of `400 Bad Request`, indicating a client-side validation failure.
+            - The error message for the `id` field in the response should match the expected validation error.
 
         """
         url = ApiUrls.GET_BARRELS
@@ -303,35 +306,54 @@ class TestBarrelApi:
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              request_json=Barrels.CREATE_Barrel_Wrong_UUID,
                                                              expected_status_code=400)
-        print(response)
+        data = response.json()
+        errors = Barrels.expected_errors
+        print(data)
+        assert data["errors"].get("$.id") == errors["$.id"], "invalid validation msg for barrel id"
 
     @mark.barrels
-    def test_post_barrels_empty_body(self):
+    def test_post_barrel_empty_body(self):
         """
-                   Test case for attempting to create a barrel with an invalid UUID.
 
-                   This test sends a POST request to the `GET_BARRELS` API endpoint with an incorrect UUID format
-                   and verifies that the server returns a 400 Bad Request response.
+        Test case to validate API behavior when attempting to create a barrel with an empty request body.
 
-                   Steps:
-                   1. Retrieve the API URL from `ApiUrls.GET_BARRELS`.
-                   2. Obtain custom headers using `CommonUtility.get_custom_header()`.
-                   3. Send a POST request with an invalid UUID payload (`Barrels.CREATE_Barrel_Wrong_UUID`).
-                   4. Validate that the response status code is 400.
+            **Test Objective:**
+            - This test sends a `POST` request to the `GET_BARRELS` API endpoint with an **empty payload** `{}`.
+            - It verifies that the API correctly rejects the request with a `400 Bad Request` response.
+            - Ensures that the error messages correctly match the expected validation messages.
 
-                   Assertions:
-                   - The response should return a 400 status code, indicating a client error.
+            **Test Steps:**
+            1. Retrieve the API URL from `ApiUrls.GET_BARRELS`.
+            2. Obtain custom headers using `CommonUtility.get_custom_header()`.
+            3. Send a `POST` request with an **empty JSON body** `{}`.
+            4. Validate that the response returns a `400` status code.
+            5. Verify that the error messages correctly indicate missing required fields (`qr`, `nfc`, `rfid`).
 
+            **Assertions:**
+            - The API must return a `400 Bad Request` status.
+            - The `"errors"` field in the response must contain the expected validation messages.
+            - Error messages must match the **expected field names** and validation responses.
+
+            **Raises:**
+            - `AssertionError`: If the API response does not match expected validation messages.
         """
+
         url = ApiUrls.GET_BARRELS
         headers = CommonUtility.get_custom_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              request_json={},
                                                              expected_status_code=400)
-        print(response)
+        expected_errors = Barrels.expected_errors
+        data = response.json()
+        # error because attributes from api does not match attrs in swagger e.g. Qr, Nfc, Rfid
+        assert data["errors"].get("qr") == expected_errors["qr"], "invalid name of attribute  in json or invalid " \
+                                                                  "message"
+        assert data["errors"].get("nfc") == expected_errors[
+            "nfc"], "invalid name of attribute in in json or invalid message"
+        assert data["errors"].get("rfid") == expected_errors["rfid"], "invalid name of attribute in json or invalid msg"
 
     @mark.barrels
-    def test_post_barrels_empty_headers(self):
+    def test_post_barrel_empty_headers(self):
         """
             Test case for attempting to create a barrel with an invalid UUID.
 
@@ -353,11 +375,11 @@ class TestBarrelApi:
         print(headers)
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              request_json=Barrels.CREATE_Barrel,
-                                                             expected_status_code=201)
+                                                             expected_status_code=400)
         print(response)
 
     @mark.barrels
-    def test_post_barrels_invalid_param_type(self):
+    def test_post_barrel_invalid_param_type(self):
         """
            Tests the API's response when attempting to create a barrel with invalid parameter types.
 
@@ -382,7 +404,8 @@ class TestBarrelApi:
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              request_json=Barrels.CREATE_Barrel_Invalid_Type,
                                                              expected_status_code=400)
-        print(response)
+        data = response.json()
+
 
     @mark.barrels
     def test_response_time_get_barrels(self):
@@ -414,12 +437,12 @@ class TestBarrelApi:
     # #####################################################################
 
     @pytest.fixture(scope="session")
-    def post_measurement(self, post_barrels_valid):
+    def post_measurement(self, post_barrel_valid):
         """
             Sends a POST request to create a measurement for a given barrel and validates the response.
 
             Args:
-                post_barrels_valid (str): The ID of the barrel for which the measurement is being posted.
+                post_barrel_valid (str): The ID of the barrel for which the measurement is being posted.
 
             Yields:
                 dict: The response data from the API containing measurement details.
@@ -481,36 +504,43 @@ class TestBarrelApi:
 
     def test_post_measurement_missing_req_value(self):
         """
-            Tests the API's response when attempting to create a measurement with missing attributes.
+             Test API response when attempting to create a measurement with missing required attributes.
 
-            Steps:
-            1. Retrieves the API URL for posting measurements.
-            2. Obtains the necessary request headers.
-            3. Sends a POST request with an incomplete JSON payload (`CREATE_Measuremenent_Missing_Attr`).
-            4. Verifies that the API returns a 400 Bad Request status code, indicating validation failure.
+             **Test Steps:**
+             1. Retrieve the API endpoint URL for posting measurements.
+             2. Obtain the necessary request headers.
+             3. Send a `POST` request with an incomplete JSON payload (`CREATE_Measurement_Missing_Attr`).
+             4. Verify that the API returns a `400 Bad Request` status code, indicating validation failure.
+             5. Validate that the response contains an appropriate error message for the missing `weight` field.
 
-            Expected Behavior:
-            - The API should reject the request due to missing required attributes.
-            - The response should include an appropriate error message.
+             **Expected Behavior:**
+             - The API should reject the request due to missing required attributes.
+             - The response should contain an `"errors"` object specifying that `weight` is a required field.
 
-            Raises:
-                AssertionError: If the response status code is not 400.
-        """
+             **Assertions:**
+             - The response status code must be `400`.
+             - The `errors` key in the response must include an error message for `weight`, matching the expected validation message.
+
+             **Raises:**
+             - `AssertionError`: If the response status code is not `400` or the validation message for `weight` is incorrect.
+         """
         url = ApiUrls.GET_MEASUREMENTS
         headers = CommonUtility.get_custom_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              request_json=Barrels.CREATE_Measuremenent_Missing_Attr,
                                                              expected_status_code=400)
+        data = response.json()
+        expected_error = Barrels.expected_errors
+        print(data)
+        # should be weight but message is for barrel
+        assert data["errors"].get("weight") == expected_error['weight'], "invalid validation message for weight"
 
-    def test_post_measurement_invalid_type(self, post_barrels_valid):
+    def test_post_measurement_validation_msgs(self):
         """
             Tests the API endpoint for posting a measurement with invalid data types.
 
             This test sends a POST request to the measurements endpoint with a payload
             that contains incorrect data types for its attributes and expects a 400 Bad Request response.
-
-            Parameters:
-                post_barrels_valid: A fixture or setup that ensures a valid barrel exists before running the test.
 
             Steps:
                 1. Retrieve the API URL for measurements.
@@ -525,8 +555,34 @@ class TestBarrelApi:
         url = ApiUrls.GET_MEASUREMENTS
         headers = CommonUtility.get_custom_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
-                                                             request_json=Barrels.CREATE_Measuremenent_Invalid_Type,
+                                                             request_json=Barrels.CREATE_Measuremenent_Valid_MSGS,
                                                              expected_status_code=400)
+        expected_errors = Barrels.expected_errors
+        response_json = response.json()
+        error = response_json['errors']
+        title = response_json["title"]
+        barrel_id = response_json["errors"].get("barrelId")
+        # dirt level msg missing but its required field
+        dirt_level = response_json["errors"].get("dirtLevel")
+        weight = response_json["errors"].get("weight")
+
+        print(error)
+        print("id messsage is ", id)
+
+        exp_title = 'One or more validation errors occurred.'
+        assert "errors" in response_json, "Response does not contain 'errors' key"
+        assert exp_title == title, "response does not contain validation message title"
+        assert barrel_id == expected_errors["barrelId"], "response does not have proper validation message for " \
+                                                         "barrelId," \
+                                                         " is required filed"
+        assert dirt_level == expected_errors["dirtLevel"], "API response does not contain the expected validation " \
+                                                           "message for 'dirtLevel'. " \
+                                                           "The 'dirtLevel' field is required."
+        assert weight == expected_errors["weight"], "API response does not contain the expected validation " \
+                                                    "message for 'weight'. " \
+                                                    "The 'weight' field is required."
+
+        print(response_json)
 
     def test_post_measurement_invalid_barrel_id(self):
         """
@@ -550,7 +606,10 @@ class TestBarrelApi:
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              request_json=Barrels.CREATE_Measuremenent_Invalid_Barel_id,
                                                              expected_status_code=400)
-        print(response)
+        expected_error = Barrels.expected_errors
+        data = response.json()
+
+        assert data["errors"]["$.barrelId"] == expected_error["$.barrelId"], "invalid uuid message"
 
     def test_post_measurement_invalid_double(self):
         """
@@ -603,6 +662,7 @@ class TestBarrelApi:
         headers = CommonUtility.get_custom_inv_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              expected_status_code=415)
+        print(response)
 
     def test_get_measurements(self):
         """

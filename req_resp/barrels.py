@@ -79,6 +79,13 @@ class Barrels:
         "weight": "aaaa"
     }
 
+    CREATE_Measuremenent_Valid_MSGS = {
+        "id": random_uuid,
+        "barrelId": "",
+        "dirtLevel": 0.0,
+        "weight": 0.0,
+    }
+
     CREATE_Measuremenent_Invalid_Barel_id = {
         "id": random_uuid,
         "barrelId": 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
@@ -113,6 +120,18 @@ class Barrels:
             "weight": {"type": "number"}
         },
         "required": ["barrelId", "dirtLevel", "weight"]
+    }
+
+    expected_errors = {
+        "qr": ["The Qr fiels is required"],
+        "rfid": ['The Rfid field is required.'],
+        "nfc": ['The Nfc field is required.'],
+        "barrelId": ["The barrel field is required."],
+        "dirtLevel": ["The dirtLevel field is required."],
+        "weight": ["The weight field is required."],
+        "$.barrelId":["invalid uuid value"],
+        "$.id":["invalid uuid value"]
+
     }
 
 
