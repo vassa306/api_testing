@@ -1,0 +1,11 @@
+{
+    "prod": {
+        "base_url": "https://to-barrel-monitor.azurewebsites.net"
+    },
+    "uat": {
+        "base_url": "https://to-barrel-monitor.azurewebsites.uat.net"
+    },
+    "environment": {
+        "env": "prod"
+    }
+}
