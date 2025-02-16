@@ -2,7 +2,6 @@ from utils.common_utils import CommonUtility
 
 
 class Barrels:
-
     """
         A class that defines various test payloads and schemas for barrel and measurement entities.
 
@@ -46,10 +45,10 @@ class Barrels:
     }
 
     CREATE_Barrel_Wrong_UUID = {
-        "id":  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "qr":  "a",
+        "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "qr": "a",
         "rfid" "d"
-        "nfc":  "b"
+        "nfc": "b"
     }
 
     CREATE_Barrel_Invalid_Type = {
@@ -122,6 +121,8 @@ class Barrels:
         "required": ["barrelId", "dirtLevel", "weight"]
     }
 
+    # ######### validation msgs ############################################
+
     expected_errors = {
         "qr": ["The Qr fiels is required"],
         "rfid": ['The Rfid field is required.'],
@@ -129,14 +130,16 @@ class Barrels:
         "barrelId": ["The barrel field is required."],
         "dirtLevel": ["The dirtLevel field is required."],
         "weight": ["The weight field is required."],
-        "$.barrelId":["invalid uuid value"],
-        "$.id":["invalid uuid value"]
+        "$.barrelId": ["invalid uuid value"],
+        "$.id": ["invalid uuid value"]
     }
 
-    expected_errors_invalid ={
+    expected_errors_invalid = {
         "qr": ["qr must be string"],
         "rfid": ['rfid must be string']
     }
 
-
+    expected_errors_titles = {
+        "title_media": "Unsupported Media Type"
+    }
 
