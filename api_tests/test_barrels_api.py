@@ -410,10 +410,6 @@ class TestBarrelApi:
         # also return nonsense instead of The barrel field is required, should be qr has invalid format
         assert actual == expected_errors['rfid'], f"validation message was {actual} for rfid"
 
-
-
-
-
     @mark.barrels
     def test_response_time_get_barrels(self):
         """
@@ -524,13 +520,12 @@ class TestBarrelApi:
              - The API should reject the request due to missing required attributes.
              - The response should contain an `"errors"` object specifying that `weight` is a required field.
 
-             **Assertions:**
-             - The response status code must be `400`.
-             - The `errors` key in the response must include an error message for `weight`, matching the expected validation message.
+             **Assertions:** - The response status code must be `400`. - The `errors` key in the response must
+             include an error message for `weight`, matching the expected validation message.
 
-             **Raises:**
-             - `AssertionError`: If the response status code is not `400` or the validation message for `weight` is incorrect.
-         """
+             **Raises:** - `AssertionError`: If the response status code is not `400` or the validation message for
+             `weight` is incorrect.
+        """
         url = ApiUrls.GET_MEASUREMENTS
         headers = CommonUtility.get_custom_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
@@ -544,20 +539,29 @@ class TestBarrelApi:
 
     def test_post_measurement_validation_msgs(self):
         """
-            Tests the API endpoint for posting a measurement with invalid data types.
+                Tests the API endpoint for posting a measurement with invalid data types and missing required fields.
 
-            This test sends a POST request to the measurements endpoint with a payload
-            that contains incorrect data types for its attributes and expects a 400 Bad Request response.
+                This test verifies that the API correctly validates incoming measurement data and returns appropriate
+                error messages when invalid data types are used or required fields are missing.
 
-            Steps:
-                1. Retrieve the API URL for measurements.
-                2. Get custom headers for the request.
-                3. Send a POST request with a payload containing invalid data types.
-                4. Validate that the response status code is 400.
+            Test Steps:
+                1. Retrieve the API URL for measurements from `ApiUrls.GET_MEASUREMENTS`.
+                2. Get custom headers using `CommonUtility.get_custom_header()`.
+                3. Send a POST request to the API with a payload (`Barrels.CREATE_Measuremenent_Valid_MSGS`) that contains:
+                   - Invalid data types.
+                   - Missing required fields.
+                4. Validate that the response returns a **400 Bad Request** status.
+                5. Extract and verify the validation error messages in the response.
+
+            Assertions:
+                - The response should contain an `"errors"` key.
+                - The `"title"` in the response should be `'One or more validation errors occurred.'`.
+                - The validation message for `barrelId` should match the expected error from `Barrels.expected_errors["barrelId"]`.
+                - The validation message for `dirtLevel` should confirm that the field is required.
+                - The validation message for `weight` should confirm that the field is required.
 
             Raises:
-                AssertionError: If the response status code is not 400.
-
+                AssertionError: If any of the validation conditions fail.
         """
         url = ApiUrls.GET_MEASUREMENTS
         headers = CommonUtility.get_custom_header()
@@ -589,24 +593,30 @@ class TestBarrelApi:
                                                     "message for 'weight'. " \
                                                     "The 'weight' field is required."
 
-        print(response_json)
-
     def test_post_measurement_invalid_barrel_id(self):
         """
-           Tests the API endpoint for posting a measurement with an invalid barrel ID.
+            Tests the API endpoint for posting a measurement with an invalid barrel ID.
 
-           This test sends a POST request to the measurements endpoint using an invalid
-           barrel ID and expects a 400 Bad Request response.
+            This test verifies that the API correctly validates the `barrelId` field and returns
+            an appropriate error message when an invalid value (e.g., an incorrect UUID format)
+            is provided.
 
-           Steps:
-               1. Retrieve the API URL for measurements.
-               2. Get custom headers for the request.
-               3. Send a POST request with an invalid barrel ID payload.
-               4. Validate that the response status code is 400.
+            Test Steps:
+                1. Retrieve the API URL for measurements from `ApiUrls.GET_MEASUREMENTS`.
+                2. Obtain valid custom headers using `CommonUtility.get_custom_header()`.
+                3. Send a POST request with an **invalid `barrelId`** payload
+                   (`Barrels.CREATE_Measuremenent_Invalid_Barel_id`).
+                4. Validate that the response returns a **400 Bad Request** status.
+                5. Extract and verify the validation error message for `barrelId`.
 
-           Raises:
-               AssertionError: If the response status code is not 400.
+            Assertions:
+                - The response should have a status code of `400 Bad Request`.
+                - The `"errors"` key in the response should contain a validation message for `$.barrelId`.
+                - The validation message for `$.barrelId` should match the expected error from
+                  `Barrels.expected_errors["$.barrelId"]`.
 
+            Raises:
+                AssertionError: If any of the validation conditions fail.
         """
         url = ApiUrls.GET_MEASUREMENTS
         headers = CommonUtility.get_custom_header()
@@ -650,19 +660,33 @@ class TestBarrelApi:
 
     def test_post_invalid_header_measurement(self):
         """
-           Tests the API endpoint for posting a measurement with an invalid barrel ID.
+           Tests the API endpoint for posting a measurement with an invalid request header.
 
-           This test sends a POST request to the measurements endpoint using an negative
-           double payload and expects a 400 Bad Request response.
+            This test verifies that the API correctly rejects requests with an invalid header format
+            by returning a **415 Unsupported Media Type** response.
 
-           Steps:
-               1. Retrieve the API URL for measurements.
-               2. Get custom headers for the request.
-               3. Send a POST request with an invalid barrel ID payload.
-               4. Validate that the response status code is 400.
+            **Test Steps:**
+                1. Retrieve the API URL for measurements from `ApiUrls.GET_MEASUREMENTS`.
+                2. Obtain **invalid** custom headers using `CommonUtility.get_custom_inv_header()`.
+                3. Send a POST request to the API **without a valid `Content-Type` header**.
+                4. Validate that the response returns a **415 Unsupported Media Type** status.
+                5. Extract and verify the error message in the response.
 
-           Raises:
-               AssertionError: If the response status code is not 400.
+            **Assertions:**
+                - The response should have a status code of `415 Unsupported Media Type`.
+                - The `"title"` in the response should match `Barrels.expected_errors_titles["title_media"]`.
+
+            **Raises:**
+                AssertionError: If any of the validation conditions fail.
+
+            **Expected API Response Example:**
+            ```json
+            {
+              "title": "Unsupported Media Type",
+              "status": 415,
+              "detail": "The request's Content-Type is not supported."
+            }
+            ```
 
         """
         url = ApiUrls.GET_MEASUREMENTS
@@ -670,7 +694,10 @@ class TestBarrelApi:
         headers = CommonUtility.get_custom_inv_header()
         response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
                                                              expected_status_code=415)
-        print(response)
+        data = response.json()
+        expected_error = Barrels.expected_errors_titles
+        print(data)
+        assert data["title"] == expected_error["title_media"], "invalid header format validation msg"
 
     def test_get_measurements(self):
         """

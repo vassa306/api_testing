@@ -23,6 +23,7 @@ class Barrels:
     """
 
     random_uuid = CommonUtility.generate_random_uuid()
+    random_uuid_measurement = CommonUtility.generate_random_uuid()
 
     CREATE_Barrel = {
         "id": random_uuid,
@@ -47,7 +48,7 @@ class Barrels:
     CREATE_Barrel_Wrong_UUID = {
         "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "qr": "a",
-        "rfid" "d"
+        "rfid": "d",
         "nfc": "b"
     }
 
@@ -59,41 +60,41 @@ class Barrels:
     }
 
     CREATE_Measuremenent_Valid = {
-        "id": random_uuid,
+        "id": random_uuid_measurement,
         "barrelId": CREATE_Barrel["id"],
         "dirtLevel": 1.0,
         "weight": 20.0
     }
 
     CREATE_Measuremenent_Missing_Attr = {
-        "id": random_uuid,
+        "id": random_uuid_measurement,
         "barrelId": CREATE_Barrel["id"],
         "dirtLevel": 1.0,
     }
 
     CREATE_Measuremenent_Invalid_Type = {
         "id": 12,
-        "barrelId": CREATE_Barrel["id"],
+        "barrelId": random_uuid,
         "dirtLevel": 1,
         "weight": "aaaa"
     }
 
     CREATE_Measuremenent_Valid_MSGS = {
-        "id": random_uuid,
+        "id": random_uuid_measurement,
         "barrelId": "",
         "dirtLevel": 0.0,
-        "weight": 0.0,
+        "weight": 0.0
     }
 
     CREATE_Measuremenent_Invalid_Barel_id = {
-        "id": random_uuid,
+        "id": random_uuid_measurement,
         "barrelId": 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         "dirtLevel": 1.0,
         "weight": 10.0
     }
 
     CREATE_Measuremenent_Negative_double = {
-        "id": random_uuid,
+        "id": random_uuid_measurement,
         "barrelId": CREATE_Barrel["id"],
         "dirtLevel": -1.0,
         "weight": -10.0
@@ -105,7 +106,7 @@ class Barrels:
             "id": {"type": "string", "format": "uuid"},
             "qr": {"type": "string", "minLength": 1},
             "rfid": {"type": "string", "minLength": 1},
-            "nfc": {"type": "string", "minLength": 1}
+            "nfc": {"type": "string", "minLength": 1},
         },
         "required": ["qr", "rfid", "nfc"]
     }
