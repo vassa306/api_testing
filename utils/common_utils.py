@@ -77,13 +77,6 @@ class CommonUtility:
         return header
 
     @staticmethod
-    def get_custom_empty_header():
-        header = {
-
-        }
-        return header
-
-    @staticmethod
     def generate_random_user():
         username = CommonUtility.f.user_name()
         email = CommonUtility.f.email()
@@ -123,6 +116,15 @@ class CommonUtility:
 
     @staticmethod
     def is_expected_double(list_values):
+        """
+           Checks if the given input is a list containing only non-negative floating-point numbers.
+
+           Args:
+               list_values (any): The input value to be checked.
+
+           Returns:
+               bool: True if the input is a list where all elements are non-negative floats, otherwise False.
+        """
         if not isinstance(list_values, list):  # Check if input is a list
             return False
 
@@ -137,20 +139,44 @@ class CommonUtility:
         return random_uuid
 
     @staticmethod
-    @pytest.fixture
-    def extract_barrel_id(barrel_id) -> str:
-        return barrel_id
-
-    @staticmethod
     def is_double(value):
+        """
+           Checks if the given value is a non-negative floating-point number.
+
+           Args:
+               value (any): The value to be checked.
+
+           Returns:
+               bool: True if the value is a float and greater than or equal to zero, otherwise False.
+           """
         return isinstance(value, float) and value >= 0
 
     @staticmethod
     def extract_values(data: list[dict], key: str) -> list:
+        """
+           Extracts values associated with a specific key from a list of dictionaries.
+
+           Args:
+               data (list[dict]): A list of dictionaries from which values will be extracted.
+               key (str): The key whose values need to be retrieved.
+
+           Returns:
+               list: A list of values corresponding to the given key in each dictionary.
+                     If a dictionary does not contain the key, it is skipped.
+           """
         return [item.get(key) for item in data if key in item]
 
     @staticmethod
     def is_valid_response(response: any) -> bool:
+        """
+            Validates whether the given response is a list containing only dictionaries.
+
+            Args:
+                response (any): The response to validate.
+
+            Returns:
+                bool: True if the response is a list of dictionaries, otherwise False.
+        """
         return isinstance(response, list) and all(isinstance(item, dict) for item in response)
 
     @staticmethod

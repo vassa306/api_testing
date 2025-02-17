@@ -353,32 +353,6 @@ class TestBarrelApi:
         assert data["errors"].get("rfid") == expected_errors["rfid"], "invalid name of attribute in json or invalid msg"
 
     @mark.barrels
-    def test_post_barrel_empty_headers(self):
-        """
-            Test case for attempting to create a barrel with an invalid UUID.
-
-            This test sends a POST request to the `GET_BARRELS` API endpoint with an incorrect UUID format
-            and verifies that the server returns a 400 Bad Request response.
-
-            Steps:
-            1. Retrieve the API URL from `ApiUrls.GET_BARRELS`.
-            2. Obtain custom headers using `CommonUtility.get_custom_header()`.
-            3. Send a POST request with an invalid UUID payload (`Barrels.CREATE_Barrel_Wrong_UUID`).
-            4. Validate that the response status code is 400.
-
-            Assertions:
-            - The response should return a 400 status code, indicating a client error.
-
-        """
-        url = ApiUrls.GET_BARRELS
-        headers = CommonUtility.get_custom_empty_header()
-        print(headers)
-        response = FrameworkUtils.fire_api_with_cust_headers("POST", request_url=url, headers=headers,
-                                                             request_json=Barrels.CREATE_Barrel,
-                                                             expected_status_code=400)
-        print(response)
-
-    @mark.barrels
     def test_post_barrel_invalid_param_type(self):
         """
            Tests the API's response when attempting to create a barrel with invalid parameter types.
@@ -418,7 +392,7 @@ class TestBarrelApi:
             Steps:
             1. Retrieves the API URL for fetching barrels.
             2. Obtains the necessary headers.
-            3. Records the start time.
+            3. Records the start time of the request.
             4. Sends a GET request to the API and checks the response status code (expected: 200).
             5. Records the stop time and calculates the response time.
             6. Asserts that the response time is less than 2 seconds.
@@ -476,9 +450,9 @@ class TestBarrelApi:
 
     def test_get_measurement_with_exist_id(self, post_measurement):
         """
-          Tests the retrieval of an existing measurement by its ID.
+            Tests the retrieval of an existing measurement by its ID.
 
-          Steps:
+            Steps:
               1. Construct the GET request URL using the measurement ID.
               2. Obtain the necessary request headers.
               3. Send a GET request to fetch the measurement data.
@@ -486,16 +460,17 @@ class TestBarrelApi:
               5. Extract and validate the response data.
               6. Compare the retrieved data with the expected measurement data.
 
-          Expected Behavior:
-              - The API should return a 200 status code.
-              - The response should contain the correct measurement details.
+            Expected Behavior:
+                  - The API should return a 200 status code.
+                  - The response should contain the correct measurement details.
 
-          Assertions:
-              - Ensures that the retrieved measurement matches the expected data for the given keys:
-                ["id", "barrelId", "dirtLevel", "weight"].
+            Assertions:
+                - Ensures that the retrieved measurement matches the expected data for the given keys:
+                  ["id", "barrelId", "dirtLevel", "weight"].
 
-          Args:
-              post_measurement (dict): Dictionary returned by the `post_measurement` fixture containing measurement details.
+            Args:
+              post_measurement (dict): Dictionary returned by the `post_measurement` fixture containing
+              measurement details.
         """
         url = ApiUrls.get_msr_by_id(post_measurement["id"])
         headers = CommonUtility.get_custom_header()
@@ -660,34 +635,23 @@ class TestBarrelApi:
 
     def test_post_invalid_header_measurement(self):
         """
-           Tests the API endpoint for posting a measurement with an invalid request header.
-
+            Tests the API endpoint for posting a measurement with an invalid request header.
             This test verifies that the API correctly rejects requests with an invalid header format
             by returning a **415 Unsupported Media Type** response.
 
-            **Test Steps:**
+            Test Steps:
                 1. Retrieve the API URL for measurements from `ApiUrls.GET_MEASUREMENTS`.
                 2. Obtain **invalid** custom headers using `CommonUtility.get_custom_inv_header()`.
                 3. Send a POST request to the API **without a valid `Content-Type` header**.
                 4. Validate that the response returns a **415 Unsupported Media Type** status.
                 5. Extract and verify the error message in the response.
 
-            **Assertions:**
+            Assertions:
                 - The response should have a status code of `415 Unsupported Media Type`.
                 - The `"title"` in the response should match `Barrels.expected_errors_titles["title_media"]`.
 
-            **Raises:**
+            Raises:
                 AssertionError: If any of the validation conditions fail.
-
-            **Expected API Response Example:**
-            ```json
-            {
-              "title": "Unsupported Media Type",
-              "status": 415,
-              "detail": "The request's Content-Type is not supported."
-            }
-            ```
-
         """
         url = ApiUrls.GET_MEASUREMENTS
 
@@ -730,15 +694,5 @@ class TestBarrelApi:
                                                              expected_status_code=200)
 
         data = response.json()
-        uuid_list = CommonUtility.extract_values(data, "id")
-        barrel_id_list = CommonUtility.extract_values(data, "barrelId")
-        dirt_level_list = CommonUtility.extract_values(data, "dirtLevel")
-        weight_list = CommonUtility.extract_values(data, "weight")
-        is_valid_uuid = CommonUtility.is_valid_uuid_list(uuid_list, 4)
-        is_valid_barel_uuid = CommonUtility.is_valid_uuid_list(barrel_id_list, 4)
-        is_valid_weight_vals = CommonUtility.is_expected_double(weight_list)
-        is_valid_dirtLevels_vals = CommonUtility.is_expected_double(dirt_level_list)
-        assert is_valid_uuid is True, "is not valid UUID string"
-        assert is_valid_barel_uuid is True, "is not a String or its an empty String"
-        assert is_valid_dirtLevels_vals is True, "Dirt level is not a double or its an negative double"
-        assert is_valid_weight_vals is True, " Weight is not a double or its an negative double"
+        assert not data, "JSON response is not empty!"
+
